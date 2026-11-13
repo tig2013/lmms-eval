@@ -12,30 +12,24 @@ from huggingface_hub import hf_hub_download
 
 DATASET_REPO = "llamaindex/ExtractBench"
 DATASET_REVISION = "f9b910906cd7e73cc9eb5379a8d5d935c67b92c4"
-SCORER_REVISION = "3eefaacab7cd06e25e8408caebf2a42e0350142a"
-SCORER_URL = f"https://github.com/run-llama/ExtractBench/archive/{SCORER_REVISION}.tar.gz"
+SCORER_VERSION = "1.0.0"
+SCHEMA_VERSION = "2.0.0"
 RENDER_DPI = 150
 _THINK_RE = re.compile(r"^\s*<think>.*?(?:</think>\s*|\Z)", re.DOTALL)
 
 
 @lru_cache(maxsize=1)
 def check_dependency():
-    """Reject the older PyPI release that has the same version as this source pin."""
-    message = "ExtractBench requires Python >=3.12 and the pinned scorer; install with uv sync --extra extractbench."
+    """Require the published scorer and schema versions used by this task."""
+    message = "ExtractBench requires Python >=3.12 and the pinned scorer; install lmms_eval[extractbench]."
     if sys.version_info < (3, 12):
         raise RuntimeError(message)
     try:
-        distribution = importlib.metadata.distribution("llama-extract-bench")
-        source = json.loads(distribution.read_text("direct_url.json") or "{}")
-        import extract_bench
-    except (ImportError, json.JSONDecodeError) as error:
+        for package, expected in (("llama-extract-bench", SCORER_VERSION), ("parse-bench", SCHEMA_VERSION)):
+            if importlib.metadata.version(package) != expected:
+                raise RuntimeError(f"{message} Expected {package}=={expected}.")
+    except importlib.metadata.PackageNotFoundError as error:
         raise RuntimeError(message) from error
-    # uv records the immutable archive URL but may leave archive_info empty.
-    archive_matches = source.get("url") == SCORER_URL
-    vcs_matches = source.get("vcs_info", {}).get("commit_id") == SCORER_REVISION
-    installed = Path(distribution.locate_file("extract_bench/__init__.py")).resolve()
-    if not (archive_matches or vcs_matches) or Path(extract_bench.__file__).resolve() != installed:
-        raise RuntimeError(message + " The installed source provenance does not match the required commit.")
 
 
 def _decode(doc, key, default=None):

@@ -9,9 +9,6 @@ select = ["E4", "E7", "E9", "F", "I", "A", "ASYNC"]
 [tool.ruff.lint.isort]
 known-first-party = ["lmms_eval"]
 
-[tool.uv.sources]
-llama-extract-bench = { url = "https://github.com/run-llama/ExtractBench/archive/3eefaacab7cd06e25e8408caebf2a42e0350142a.tar.gz" }
-
 [build-system]
 requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
@@ -156,6 +153,7 @@ prismmbench = [
 ]
 extractbench = [
     "llama-extract-bench==1.0.0; python_version >= '3.12'",
+    "parse-bench==2.0.0; python_version >= '3.12'",
     "pdf2image>=1.17.0",
     "pypdf>=6.4.0",
     "openai>=1.0.0",

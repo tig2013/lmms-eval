@@ -62,12 +62,17 @@ def test_unsafe_media_paths_fail_before_download(pdf, monkeypatch):
         utils.extractbench_doc_to_visual({**row(), "pdf": pdf})
 
 
-def test_missing_or_wrong_scorer_provenance_fails(monkeypatch):
-    fake = SimpleNamespace(
-        read_text=lambda name: json.dumps({"url": "https://example.com/wrong.tar.gz"}),
-        locate_file=lambda name: Path(name),
-    )
-    monkeypatch.setattr(utils.importlib.metadata, "distribution", lambda name: fake)
+@pytest.mark.parametrize("package", ["llama-extract-bench", "parse-bench"])
+@pytest.mark.parametrize("installed", [None, "0.0.0"])
+def test_missing_or_wrong_scorer_version_fails(monkeypatch, package, installed):
+    def version(name):
+        if name == package:
+            if installed is None:
+                raise utils.importlib.metadata.PackageNotFoundError(name)
+            return installed
+        return {"llama-extract-bench": utils.SCORER_VERSION, "parse-bench": utils.SCHEMA_VERSION}[name]
+
+    monkeypatch.setattr(utils.importlib.metadata, "version", version)
     utils.check_dependency.cache_clear()
     try:
         with pytest.raises(RuntimeError, match="pinned scorer"):

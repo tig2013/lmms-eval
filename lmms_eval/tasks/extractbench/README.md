@@ -13,9 +13,9 @@ unrelated Contextual AI benchmark with the same name.
 | `extractbench` | 370 | All three splits |
 
 Dataset revision: `f9b910906cd7e73cc9eb5379a8d5d935c67b92c4`.
-Evaluator and prompt source:
-[run-llama/ExtractBench](https://github.com/run-llama/ExtractBench/tree/3eefaacab7cd06e25e8408caebf2a42e0350142a)
-at `3eefaacab7cd06e25e8408caebf2a42e0350142a` (Apache-2.0).
+Evaluator and prompt: the published
+[llama-extract-bench 1.0.0](https://pypi.org/project/llama-extract-bench/1.0.0/)
+release (Apache-2.0), with `parse-bench==2.0.0` for its shared schema models.
 
 ## Protocol
 
@@ -76,26 +76,21 @@ scores are deliberately omitted.
 
 ## Setup and execution
 
-Python 3.12 or newer is required by the official scorer. Install the pinned
-archive, rather than PyPI `llama-extract-bench==1.0.0`, whose source is older:
+Python 3.12 or newer is required by the official scorer. From the source checkout:
 
 ```bash
 uv sync --python 3.12 --extra extractbench
 ```
 
-Run this from the source checkout: `tool.uv.sources` selects the exact archive
-while keeping the package metadata publishable. Other installers do not read
-that setting. For a pip-based environment, install the pinned source explicitly
-alongside the extra:
+The optional dependency set uses published PyPI releases with the same version
+pins for all installers. For a pip-based environment:
 
 ```bash
-pip install 'lmms_eval[extractbench]' \
-    'llama-extract-bench @ https://github.com/run-llama/ExtractBench/archive/3eefaacab7cd06e25e8408caebf2a42e0350142a.tar.gz'
+pip install 'lmms_eval[extractbench]'
 ```
 
-Installing the extra from PyPI alone selects the older `1.0.0` source and the
-task rejects it. The runtime guard checks the recorded source commit/archive
-and package location; the dependency lock records the archive digest.
+The runtime guard checks the scorer and shared schema package versions.
+The dependency lock records the release artifact hashes.
 
 Install Poppler separately (`brew install poppler` on macOS, or the
 `poppler-utils` system package on Debian/Ubuntu). The task does not install
@@ -114,9 +109,9 @@ LMMS_IMAGE_ENCODE_FORMAT=PNG uv run --extra extractbench python -m lmms_eval \
 
 Check the selected backend's CLI and model requirements. Select a leaf task for
 a split-specific run. `--limit` is useful for debugging but does not establish
-full benchmark coverage. Keep raw responses and record the dataset/scorer
-revisions, resolved dependencies, model revision, mode and effective generation
-settings with every result.
+full benchmark coverage. Keep raw responses and record the dataset revision,
+scorer version, resolved dependencies, model revision, mode and effective
+generation settings with every result.
 
 ## Tests
 
